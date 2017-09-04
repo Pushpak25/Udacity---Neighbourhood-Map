@@ -6,7 +6,7 @@
     <title>Neighborhood Restaurants</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="lib/bootstrap/css/bootstrap.min.css">
 
     <!-- custom css -->
     <link rel="stylesheet" href="css/main.css">
@@ -15,7 +15,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
     <!-- bootstrap javascript -->
-    <script src="bootstrap/js/bootstrap.min.js"></script>
+    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
 
     <!-- google fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300%7CLora">
@@ -24,39 +24,23 @@
 
 <body>
     <div class="container">
-        <div class="attribution">
-            Powered by Foursquare API
-        </div>
-        <!-- Map div-->
         <div id="map"></div>
-        <!--List View div -->
-        <div class="list-div">
-            <!--Search Box-->
-            <header>
-                <h1>Restaurants in Bengaluru</h1>
-                <form class="form-inline" id="form-search" data-bind="submit: onSearchClicked">
-                    <input type="text" class="form-control" data-bind="value: filterQuery" id="filterBox" placeholder="Search" autofocus>
-                    <button type="submit" id="btnSubmit" class="btn btn-outline-danger">Search</button>
-                </form>
-                <!--Number of results from the search filter-->
-                <p id="searchSummary" data-bind="text: searchResult">
-                </p>
-            </header>
-            <!--List of search Results-->
+        <div id="list-div">
+            <div id="header">
+                <h1>Best Biryani's in Bengaluru</h1> <br />
+            </div>
+                <div id="search">
+                    <input id="filterBox" data-bind="textInput: query, valueUpdate: 'afterkeydown', event:{'keyup':filteredRestaurants}" placeholder="Search Restaurants...">
+                </div>
             <aside>
-                <ul class="list-group" data-bind="foreach: {data: FilteredRestaurantList, as: 'restaurant'}" id="list">
-                    <li data-bind="click: $root.selectRestaurant" class="list-group-item">
-                        <span data-bind="text: restaurant.name"></span>
-                    </li>
+                <ul id="list" class="list-group" data-bind="foreach: restaurantList">
+                    <li class="list-group-item" data-bind="text: name, click: click"></li>
                 </ul>
             </aside>
-
-
         </div>
-
     </div>
     <!--Loading Scripts-->
-    <script src="lib/knockout-3.4.2.js"></script>
+    <script src="lib/knockout/knockout-3.4.2.js"></script>
     <script src="scripts/app.js"></script>
     <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCcbm-U2pvuRQ9kXkzYhA8i4-wqDB9npC4&callback=initMap" onerror="mapLoadError()">
     </script>
