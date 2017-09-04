@@ -1,400 +1,161 @@
-var map;
-var defaultMarker;
-var highlightedMarker;
-var initLat = 12.97194;
-var initLong = 77.59369;
+'use strict';
 
-function mapLoadError() {
-    $('#searchSummary').text("Could not load Google Maps");
-    $('#list').hide();
+//Declaration of global variables
+var map;
+const initLat = 12.927442;
+const initLong = 77.63276;
+var allRestaurants = [];
+var filteredRestaurants = [];
+var markers = [];
+var infoWindows = [];
+
+//Restaurant model
+var Restaurant = function (data) {
+    var self = this;
+    this.name = data.name;
+    this.infoWindow = data.infoWindow;
+    this.marker = data.marker;
+    this.click = function () {
+        if (document.readyState === "complete") { //To prevent calling this on initial page load
+            resetMarkers();
+            toggleBounce(self.marker);
+            self.infoWindow.open(map, self.marker);
+        }
+    }
 }
 
-//Initialize Map
+//Function to reset all markers and infoWindows
+function resetMarkers() {
+    markers.forEach(function (marker) {
+        marker.setAnimation(null);
+    })
+    infoWindows.forEach(function (infoWindow) {
+        infoWindow.close(infoWindow);
+    })
+}
+
+$(document).ready(function () {
+    // Function to use string.format similar to that of C# (to format the infoWindow contentString)
+    if (!String.prototype.format) {
+        String.prototype.format = function () {
+            var args = arguments;
+            return this.replace(/{(\d+)}/g, function (match, number) {
+                return typeof args[number] != 'undefined'
+                  ? args[number]
+                  : match
+                ;
+            });
+        };
+    }
+})
+
+//function to toggle the marker with animation bounce
+function toggleBounce(marker) {
+    if (marker.getAnimation() !== null && marker.getAnimation() !== undefined) {
+        marker.setAnimation(null);
+    } else {
+        marker.setAnimation(google.maps.Animation.BOUNCE);
+    }
+}
+
+//Function to initialize the map
 function initMap() {
-    var styles = [{
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#ebe3cd"
-            }]
-        },
-        {
-            "elementType": "labels.text.fill",
-            "stylers": [{
-                "color": "#523735"
-            }]
-        },
-        {
-            "elementType": "labels.text.stroke",
-            "stylers": [{
-                "color": "#f5f1e6"
-            }]
-        },
-        {
-            "featureType": "administrative",
-            "elementType": "geometry.stroke",
-            "stylers": [{
-                "color": "#c9b2a6"
-            }]
-        },
-        {
-            "featureType": "administrative.land_parcel",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "administrative.land_parcel",
-            "elementType": "geometry.stroke",
-            "stylers": [{
-                "color": "#dcd2be"
-            }]
-        },
-        {
-            "featureType": "administrative.land_parcel",
-            "elementType": "labels.text.fill",
-            "stylers": [{
-                "color": "#ae9e90"
-            }]
-        },
-        {
-            "featureType": "administrative.neighborhood",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "landscape.natural",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#dfd2ae"
-            }]
-        },
-        {
-            "featureType": "poi",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#dfd2ae"
-            }]
-        },
-        {
-            "featureType": "poi",
-            "elementType": "labels.text",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "poi",
-            "elementType": "labels.text.fill",
-            "stylers": [{
-                "color": "#93817c"
-            }]
-        },
-        {
-            "featureType": "poi.business",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "poi.park",
-            "elementType": "geometry.fill",
-            "stylers": [{
-                "color": "#a5b076"
-            }]
-        },
-        {
-            "featureType": "poi.park",
-            "elementType": "labels.text",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "poi.park",
-            "elementType": "labels.text.fill",
-            "stylers": [{
-                "color": "#447530"
-            }]
-        },
-        {
-            "featureType": "road",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#f5f1e6"
-            }]
-        },
-        {
-            "featureType": "road",
-            "elementType": "labels",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "road.arterial",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "road.arterial",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#fdfcf8"
-            }]
-        },
-        {
-            "featureType": "road.highway",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#f8c967"
-            }]
-        },
-        {
-            "featureType": "road.highway",
-            "elementType": "geometry.stroke",
-            "stylers": [{
-                "color": "#e9bc62"
-            }]
-        },
-        {
-            "featureType": "road.highway",
-            "elementType": "labels",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "road.highway.controlled_access",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#e98d58"
-            }]
-        },
-        {
-            "featureType": "road.highway.controlled_access",
-            "elementType": "geometry.stroke",
-            "stylers": [{
-                "color": "#db8555"
-            }]
-        },
-        {
-            "featureType": "road.local",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "road.local",
-            "elementType": "labels.text.fill",
-            "stylers": [{
-                "color": "#806b63"
-            }]
-        },
-        {
-            "featureType": "transit.line",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#dfd2ae"
-            }]
-        },
-        {
-            "featureType": "transit.line",
-            "elementType": "labels.text.fill",
-            "stylers": [{
-                "color": "#8f7d77"
-            }]
-        },
-        {
-            "featureType": "transit.line",
-            "elementType": "labels.text.stroke",
-            "stylers": [{
-                "color": "#ebe3cd"
-            }]
-        },
-        {
-            "featureType": "transit.station",
-            "elementType": "geometry",
-            "stylers": [{
-                "color": "#dfd2ae"
-            }]
-        },
-        {
-            "featureType": "water",
-            "elementType": "geometry.fill",
-            "stylers": [{
-                "color": "#b9d3c2"
-            }]
-        },
-        {
-            "featureType": "water",
-            "elementType": "labels.text",
-            "stylers": [{
-                "visibility": "off"
-            }]
-        },
-        {
-            "featureType": "water",
-            "elementType": "labels.text.fill",
-            "stylers": [{
-                "color": "#92998d"
-            }]
-        }
-    ];
     map = new google.maps.Map(document.getElementById('map'), {
         center: { lat: initLat, lng: initLong },
-        zoom: 13,
-        styles: styles,
-        mapTypeControl: false
+        zoom: 13
     });
-    ko.applyBindings(new AppViewModel());
-}
-
-String.prototype.contains = function(other) {
-    return this.indexOf(other) !== -1;
-};
-
-//Knockout's View Model
-var AppViewModel = function() {
-    var self = this;
-
-    function initialize() {
-        getRestaurants();
-    }
-
-
-    if (typeof google !== 'object' || typeof google.maps !== 'object') {} else {
-        defaultMarker = makeMarkerIcon('FF0000');
-        highlightedMarker = makeMarkerIcon('FFFF24');
-        var infoWindow = new google.maps.InfoWindow();
-        google.maps.event.addDomListener(window, 'load', initialize);
-    }
-    self.restaurantList = ko.observableArray([]);
-    self.filterQuery = ko.observable('');
-    self.searchResult = ko.observable('');
-
-    self.onSearchClicked = function() {
-        return false; //Prevents page reload on btnSubmit click
-    };
-
-
-    //List of restaurant's after filter based on search query
-    self.FilteredRestaurantList = ko.computed(function() {
-        self.restaurantList().forEach(function(restaurant) {
-            restaurant.marker.setMap(null);
-        });
-
-        var results = ko.utils.arrayFilter(self.restaurantList(), function(restaurant) {
-            return restaurant.name().toLowerCase().contains(self.filterQuery().toLowerCase());
-        });
-
-        results.forEach(function(restaurant) {
-            restaurant.marker.setMap(map);
-        });
-        if (results.length > 0) {
-            if (results.length == 1) {
-                self.searchResult(results.length + " restaurant from Foursquare ");
-            } else {
-                self.searchResult(results.length + " restaurants from Foursquare ");
-            }
-        } else {
-            self.searchResult("No restaurants Available");
+    
+    //ViewModel
+    var ViewModel = function () {
+        var self = this;
+        this.restaurantList = ko.observableArray([]);
+        this.query = ko.observable('');
+        this.getContentString = function (restaurant) {
+            return "<img src='{0}' alt='{1}'><br/><h4>{1}</h4><br/><p>{2}</p><p><strong>Cuisines:</strong> {3}</p><p><strong>Rating:</strong> <span style='background: #{7};color:white;border-radius: 4px;font-size: 16px; height: 25px;line-height: 23px;font-weight:bold;text-align: center;width: 36px;margin: 0 auto;'>{8}</span></p><a href='{4}'>Menu</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='{6}'>Photos</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href='{5}'>More...</a>"
+                .format(restaurant.thumb, restaurant.name, restaurant.location.address, restaurant.cuisines, restaurant.menu_url, restaurant.url, restaurant.photos_url, restaurant.user_rating.rating_color, restaurant.user_rating.aggregate_rating);
         }
-        return results;
-    });
-    self.searchResult("Loading restaurants, Please wait...");
+        this.getRestaurants = ko.computed(function () {
 
-    //function called when a restaurant is clicked from the filtered list
-    self.selectRestaurant = function(restaurant) {
-        infoWindow.setContent(restaurant.formatedDataForInfoWindow());
-        infoWindow.open(map, restaurant.marker);
-        map.panTo(restaurant.marker.position);
-        restaurant.marker.setAnimation(google.maps.Animation.BOUNCE);
-        restaurant.marker.setIcon(highlightedMarker);
-        self.restaurantList().forEach(function(unselected_restaurant) {
-            if (restaurant != unselected_restaurant) {
-                unselected_restaurant.marker.setAnimation(null);
-                unselected_restaurant.marker.setIcon(defaultMarker);
+            var params = {
+                lat: initLat,
+                lon: initLong,
+                radius: 5000,
+                collection_id: 51, //Brilliant biryani's collection from Zomato (found using their collections API)
+                sort: 'rating',
+                order: 'desc'
             }
-        });
-    };
-
-    //Get restaurants in Bengaluru
-    function getRestaurants() {
-        var data;
-
-        $.ajax({
-            url: 'https://api.foursquare.com/v2/venues/explore',
-            dataType: 'json',
-            data: 'client_id=M1SZDSAG2GXQWNSFDAJKR1UID5AWRBWLMOMTL3H0JH4KXEZJ&client_secret=QOMLC0OL2H4ZNPP0C5X0ZJMG3WBEKG2NDOEG3EC1GKUNP4CZ&v=20170810%20&near=Bangalore, IN&query=restaurant',
-            async: true,
-        }).done(function(response) {
-            if(response.response.groups[0] < 1) $('#searchSummary').text('restaurants could not load...');
-            data = response.response.groups[0].items;
-            data.forEach(function(restaurant) {
-                foursquare = new Foursquare(restaurant.venue, map);
-                self.restaurantList.push(foursquare);
-            });
-            self.restaurantList().forEach(function(restaurant) {
-                if (restaurant.map_location()) {
-                    google.maps.event.addListener(restaurant.marker, 'click', function() {
-                        self.selectRestaurant(restaurant);
+            var filterString = $("#search").val();
+            $.ajax({
+                url: 'https://developers.zomato.com/api/v2.1/search',
+                headers: {
+                    'Accept': 'application/json',
+                    'user-key': '7e6baf0a4c94c6ab35ee9c936d72f35b'
+                },
+                method: 'GET',
+                dataType: 'json',
+                data: params,
+                async: true,
+            }).done(function (response) {
+                allRestaurants = response.restaurants;
+                allRestaurants.forEach(function (restaurant) {
+                    var marker = new google.maps.Marker({
+                        position: { lat: parseFloat(restaurant.restaurant.location.latitude), lng: parseFloat(restaurant.restaurant.location.longitude) },
+                        map: map,
+                        title: restaurant.restaurant.name
                     });
-                }
+                    var contentString = self.getContentString(restaurant.restaurant);
+                    var infowindow = new google.maps.InfoWindow({
+                        content: contentString
+                    });
+                    marker.addListener('click', function () {
+                        infowindow.open(map, marker); //open the selected marker's infoWindow
+                        toggleBounce(marker);
+                    });
+                    //Close infoWindow by clicking anywhere on the map
+                    map.addListener("click", function () {
+                        infowindow.close(infowindow);
+                        marker.setAnimation(null);
+                    });
+                    markers.push(marker);
+                    infoWindows.push(infowindow);
+                    restaurant.restaurant.marker = marker;
+                    restaurant.restaurant.infoWindow = infowindow;
+                    self.restaurantList.push(new Restaurant(restaurant.restaurant));
+                })
+            }).fail(function (response) {
+                alert('Could not load restaurant details from the Zomato server');
             });
-        }).fail(function(response, status, error) {
-            $('#searchSummary').text('restaurants could not load...');
-        });
-    }
-};
+        }, this);
 
-//function to make default and highlighted marker icon
-function makeMarkerIcon(markerColor) {
-    var markerImage = new google.maps.MarkerImage(
-        'http://chart.googleapis.com/chart?chst=d_map_spin&chld=1.15|0|' + markerColor +
-        '|40|_|%E2%80%A2',
-        new google.maps.Size(21, 34),
-        new google.maps.Point(0, 0),
-        new google.maps.Point(10, 34),
-        new google.maps.Size(21, 34));
-    return markerImage;
+        this.filteredRestaurants = function () {
+            var filteredRestaurants = [];
+            self.restaurantList([]); //resetting restaurantList
+            resetMarkers();
+
+            var filterString = self.query().toLowerCase();
+            
+            //moving filtered restaurants to filteredRestaurants and hiding all the markers
+            allRestaurants.forEach(function (restaurant) {
+                if (restaurant.restaurant.name.toLowerCase().indexOf(filterString) != -1)
+                    filteredRestaurants.push(restaurant);
+                restaurant.restaurant.marker.setVisible(false);
+            });
+
+            //Showing filtered restaurants
+            filteredRestaurants.forEach(function (restaurant) {
+                restaurant.restaurant.marker.setVisible(true);
+                self.restaurantList.push(new Restaurant(restaurant.restaurant));
+            });
+        }
+    };
+
+    //Apply knockout bindings
+    ko.applyBindings(new ViewModel());
 }
 
-var Foursquare = function(restaurant, map) {
-    var self = this;
-    self.name = ko.observable(restaurant.name);
-    self.location = restaurant.location;
-    self.lat = self.location.lat;
-    self.lng = self.location.lng;
-    //map_location returns a computed observable of latitude and longitude
-    self.map_location = ko.computed(function() {
-        if (self.lat === 0 || self.lon === 0) {
-            return null;
-        } else {
-            return new google.maps.LatLng(self.lat, self.lng);
-        }
-    });
-    self.formattedAddress = ko.observable(self.location.formattedAddress);
-    self.formattedPhone = ko.observable(restaurant.contact.formattedPhone);
-    self.marker = (function(restaurant) {
-        var marker;
-
-        if (restaurant.map_location()) {
-            marker = new google.maps.Marker({
-                position: restaurant.map_location(),
-                map: map,
-                icon: defaultMarker
-            });
-        }
-        return marker;
-    })(self);
-    self.id = ko.observable(restaurant.id);
-    self.url = ko.observable(restaurant.url);
-    self.formatedDataForInfoWindow = function() {
-        return '<div class="infoWindowContent">' + '<a href="' + (self.url() === undefined ? '/' : self.url()) + '">' +
-            '<span class="infoWindowHeader"><h4>' + (self.name() === undefined ? 'restaurant name not available' : self.name()) + '</h4></span>' +
-            '</a><h6>' + (self.formattedAddress() === undefined ? 'No address available' : self.formattedAddress()) + '<br>' + (self.formattedPhone() === undefined ? 'No Contact Info' : self.formattedPhone()) + '</h6>' +
-            '</div>';
-    };
-};
+//Error handling for map
+function mapLoadError() {
+    var img = document.createElement("IMG");
+    img.src = "images/GoogleMapLoadError.jpg";
+    $('#imageDiv').appendChild(img);
+}
