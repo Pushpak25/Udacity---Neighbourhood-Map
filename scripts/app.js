@@ -64,7 +64,7 @@ function initMap() {
         center: { lat: initLat, lng: initLong },
         zoom: 13
     });
-    
+
     //ViewModel
     var ViewModel = function () {
         var self = this;
@@ -111,6 +111,9 @@ function initMap() {
                         infowindow.open(map, marker); //open the selected marker's infoWindow
                         toggleBounce(marker);
                     });
+                    google.maps.event.addListener(infowindow, 'closeclick', function () {
+                        marker.setAnimation(null);
+                    });
                     //Close infoWindow by clicking anywhere on the map
                     map.addListener("click", function () {
                         infowindow.close(infowindow);
@@ -133,7 +136,7 @@ function initMap() {
             resetMarkers();
 
             var filterString = self.query().toLowerCase();
-            
+
             //moving filtered restaurants to filteredRestaurants and hiding all the markers
             allRestaurants.forEach(function (restaurant) {
                 if (restaurant.restaurant.name.toLowerCase().indexOf(filterString) != -1)
