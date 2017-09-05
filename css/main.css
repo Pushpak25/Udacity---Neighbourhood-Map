@@ -137,4 +137,8 @@ aside {
     h1 {
         font-size: 18px;
     }
+    
+    #search {
+		top: -102px;
+	}
 }
