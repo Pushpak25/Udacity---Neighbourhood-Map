@@ -54,7 +54,7 @@ h1 {
 #search {
     width: 100%;
     display: inline-block;
-    top: 47px;
+    top: -26px;
     position: absolute;
 }
 
@@ -80,7 +80,7 @@ aside {
     margin: 0;
     border-radius: 5px;
     position: absolute;
-    top: 72px;
+    top: 150px;
 }
 
 #map {
@@ -112,7 +112,7 @@ aside {
     }
 
     #map {
-        height: 46%;
+        height: 70%;
         width: 100%;
         position: absolute;
         left: 0px;
