@@ -11,12 +11,6 @@
     <!-- custom css -->
     <link rel="stylesheet" href="css/main.css">
 
-    <!-- jquery for bootstrap -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-
-    <!-- bootstrap javascript -->
-    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
-
     <!-- google fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:300%7CLora">
 
@@ -27,11 +21,11 @@
         <div id="map"></div>
         <div id="list-div">
             <div id="header">
-                <h1>Best Biryani's in Bengaluru</h1> <br />
+                <h1>Best Biryani's in Bengaluru</h1> <br>
             </div>
-                <div id="search">
-                    <input id="filterBox" data-bind="textInput: query, valueUpdate: 'afterkeydown', event:{'keyup':filteredRestaurants}" placeholder="Search Restaurants...">
-                </div>
+            <div id="search">
+                <input id="filterBox" data-bind="textInput: query, valueUpdate: 'afterkeydown', event:{'keyup':filteredRestaurants}" placeholder="Search Restaurants...">
+            </div>
             <aside>
                 <ul id="list" class="list-group" data-bind="foreach: restaurantList">
                     <li class="list-group-item" data-bind="text: name, click: click"></li>
@@ -40,6 +34,11 @@
         </div>
     </div>
     <!--Loading Scripts-->
+    <!-- jquery for bootstrap -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <!-- bootstrap javascript -->
+    <script src="lib/bootstrap/js/bootstrap.min.js"></script>
+    <!-- knockout javascript -->
     <script src="lib/knockout/knockout-3.4.2.js"></script>
     <script src="scripts/app.js"></script>
     <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCcbm-U2pvuRQ9kXkzYhA8i4-wqDB9npC4&callback=initMap" onerror="mapLoadError()">
